@@ -1,4 +1,4 @@
-FROM alpine:3.10
+FROM golang:alpine
 LABEL maintainer="NGINX Docker Maintainers <docker-maint@nginx.com>"
 ENV NGINX_VERSION 1.16.1
 ENV NGX_BROTLI_COMMIT e505dce68acc190cc5a1e780a3b0275e39f160ca 
@@ -68,6 +68,7 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 		gd-dev \
 		geoip-dev \
 		perl-dev \
+		go \
 	&& apk add --no-cache --virtual .brotli-build-deps \
 		autoconf \
 		libtool \
@@ -121,6 +122,7 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	&& strip /usr/lib/nginx/modules/*.so \
 	&& rm -rf /usr/src/nginx-$NGINX_VERSION \
 	&& rm -rf /usr/src/ngx_brotli \
+	&& rm -rf /usr/src/quiche \
 	\
 	# Bring in gettext so we can get `envsubst`, then throw
 	# the rest away. To do this, we need to install `gettext`
