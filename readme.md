@@ -10,4 +10,3 @@ This image has support for Brotli and HTTP3 QUIC support (cdrocker/nginx:1.16.1)
 # credits
 Based on the work of fholzer/docker-nginx-brotli
 
-# HTTP3 IS BETA QUALITY
