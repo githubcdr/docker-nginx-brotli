@@ -1,9 +1,7 @@
-FROM alpine:latest
-
+FROM alpine:3.10
 LABEL maintainer="NGINX Docker Maintainers <docker-maint@nginx.com>"
-
 ENV NGINX_VERSION 1.16.1
-
+ENV NGX_BROTLI_COMMIT e505dce68acc190cc5a1e780a3b0275e39f160ca 
 RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	&& CONFIG="\
 		--prefix=/etc/nginx \
@@ -50,10 +48,10 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 		--with-compat \
 		--with-file-aio \
 		--with-http_v2_module \
-		--with-http_v3_module \
-		--with-openssl=/usr/src/quiche/deps/boringssl \
-		--with-quiche=/usr/src/quiche \
 		--add-module=/usr/src/ngx_brotli \
+		--with-http_v3_module \
+   	        --with-openssl=/usr/src/quiche/deps/boringssl \
+   	        --with-quiche=/usr/src/quiche
 	" \
 	&& addgroup -S nginx \
 	&& adduser -D -S -h /var/cache/nginx -s /sbin/nologin -G nginx nginx \
@@ -80,14 +78,23 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 		cmake \
 	&& mkdir -p /usr/src \
 	&& cd /usr/src \
-	&& git clone --recursive https://github.com/eustas/ngx_brotli.git \
-	&& git clone --recursive https://github.com/cloudflare/quiche \
+	&& git clone --recursive https://github.com/google/ngx_brotli.git \
+	&& git clone --recursive https://github.com/cloudflare/quiche.git \
+	&& cd ngx_brotli \
+	&& git checkout -b $NGX_BROTLI_COMMIT $NGX_BROTLI_COMMIT \
+	&& cd .. \
 	&& curl -fSL https://nginx.org/download/nginx-$NGINX_VERSION.tar.gz -o nginx.tar.gz \
+	&& curl -fSL https://nginx.org/download/nginx-$NGINX_VERSION.tar.gz.asc -o nginx.tar.gz.asc \
+        && sha512sum nginx.tar.gz nginx.tar.gz.asc \
+	&& export GNUPGHOME="$(mktemp -d)" \
+	&& gpg --keyserver ipv4.pool.sks-keyservers.net --recv-keys "$GPG_KEYS" \
+	&& gpg --batch --verify nginx.tar.gz.asc nginx.tar.gz \
+	&& rm -rf "$GNUPGHOME" nginx.tar.gz.asc \
 	&& mkdir -p /usr/src \
 	&& tar -zxC /usr/src -f nginx.tar.gz \
 	&& rm nginx.tar.gz \
 	&& cd /usr/src/nginx-$NGINX_VERSION \
-	&& patch -p01 < /usr/src/quiche/extras/nginx/nginx-1.16.patch \
+	&& patch -p01 < ../quiche/extras/nginx/nginx-1.16.patch \
 	&& ./configure $CONFIG --with-debug \
 	&& make -j$(getconf _NPROCESSORS_ONLN) \
 	&& mv objs/nginx objs/nginx-debug \
