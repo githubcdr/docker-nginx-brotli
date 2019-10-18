@@ -54,6 +54,8 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
    	        --with-quiche=/usr/src/quiche" \
 	&& addgroup -S nginx \
 	&& adduser -D -S -h /var/cache/nginx -s /sbin/nologin -G nginx nginx \
+	&& echo 'http://nl.alpinelinux.org/alpine/edge/main'>> /etc/apk/repositories \
+	&& echo 'http://nl.alpinelinux.org/alpine/edge/community' >> /etc/apk/repositories \
 	&& apk add --no-cache --virtual .build-deps \
 		gcc \
 		libc-dev \
@@ -69,6 +71,7 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 		geoip-dev \
 		perl-dev \
 		go \
+		cargo \
 	&& apk add --no-cache --virtual .brotli-build-deps \
 		autoconf \
 		libtool \
