@@ -70,8 +70,6 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 		gd-dev \
 		geoip-dev \
 		perl-dev \
-		go \
-		cargo \
 	&& apk add --no-cache --virtual .brotli-build-deps \
 		autoconf \
 		libtool \
@@ -79,13 +77,16 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 		git \
 		g++ \
 		cmake \
+	&& apk add --no-cache --virtual .quiche-build-deps \
+		go \
+		cargo \
 	&& mkdir -p /usr/src \
 	&& cd /usr/src \
 	&& git clone --recursive https://github.com/google/ngx_brotli.git \
 	&& git clone --recursive https://github.com/cloudflare/quiche.git \
 	&& cd ngx_brotli \
 	&& git checkout -b $NGX_BROTLI_COMMIT $NGX_BROTLI_COMMIT \
-	&& cd .. \
+	&& cd /usr/src \
 	&& curl -fSL https://nginx.org/download/nginx-$NGINX_VERSION.tar.gz -o nginx.tar.gz \
 	&& curl -fSL https://nginx.org/download/nginx-$NGINX_VERSION.tar.gz.asc -o nginx.tar.gz.asc \
         && sha512sum nginx.tar.gz nginx.tar.gz.asc \
@@ -93,7 +94,6 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	&& gpg --keyserver ipv4.pool.sks-keyservers.net --recv-keys "$GPG_KEYS" \
 	&& gpg --batch --verify nginx.tar.gz.asc nginx.tar.gz \
 	&& rm -rf "$GNUPGHOME" nginx.tar.gz.asc \
-	&& mkdir -p /usr/src \
 	&& tar -zxC /usr/src -f nginx.tar.gz \
 	&& rm nginx.tar.gz \
 	&& cd /usr/src/nginx-$NGINX_VERSION \
@@ -144,6 +144,7 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	&& apk add --no-cache --virtual .nginx-rundeps tzdata $runDeps \
 	&& apk del .build-deps \
 	&& apk del .brotli-build-deps \
+	&& apk del .quiche-build-deps \
 	&& apk del .gettext \
 	&& mv /tmp/envsubst /usr/local/bin/ \
 	\
