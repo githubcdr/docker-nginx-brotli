@@ -68,7 +68,6 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 		gd-dev \
 		geoip-dev \
 		perl-dev \
-		go \
 	&& apk add --no-cache --virtual .brotli-build-deps \
 		autoconf \
 		libtool \
