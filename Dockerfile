@@ -1,8 +1,8 @@
-FROM alpine:3.10
+FROM alpine:latest
 
 LABEL maintainer="NGINX Docker Maintainers <docker-maint@nginx.com>"
 
-ENV NGINX_VERSION 1.17.2
+ENV NGINX_VERSION 1.16.1
 
 RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	&& CONFIG="\
@@ -50,6 +50,9 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 		--with-compat \
 		--with-file-aio \
 		--with-http_v2_module \
+		--with-http_v3_module \
+		--with-openssl=/usr/src/quiche/deps/boringssl \
+		--with-quiche=/usr/src/quiche \
 		--add-module=/usr/src/ngx_brotli \
 	" \
 	&& addgroup -S nginx \
@@ -78,11 +81,13 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	&& mkdir -p /usr/src \
 	&& cd /usr/src \
 	&& git clone --recursive https://github.com/eustas/ngx_brotli.git \
+	&& git clone --recursive https://github.com/cloudflare/quiche \
 	&& curl -fSL https://nginx.org/download/nginx-$NGINX_VERSION.tar.gz -o nginx.tar.gz \
 	&& mkdir -p /usr/src \
 	&& tar -zxC /usr/src -f nginx.tar.gz \
 	&& rm nginx.tar.gz \
 	&& cd /usr/src/nginx-$NGINX_VERSION \
+	&& patch -p01 < /usr/src/quiche/extras/nginx/nginx-1.16.patch
 	&& ./configure $CONFIG --with-debug \
 	&& make -j$(getconf _NPROCESSORS_ONLN) \
 	&& mv objs/nginx objs/nginx-debug \
